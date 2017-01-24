@@ -7,7 +7,7 @@ import java.util.Date;
  */
 
 public class Message {
-    private Contact contact;
+    public Contact contact;
     private Date date;
     private String body;
 

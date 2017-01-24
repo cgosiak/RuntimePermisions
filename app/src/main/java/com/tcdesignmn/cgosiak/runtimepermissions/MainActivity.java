@@ -11,19 +11,26 @@ import android.os.Environment;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
+
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,29 +50,37 @@ public class MainActivity extends AppCompatActivity {
             if (HasPermissions()) {
                 // MakeFolder();
                 ArrayList<Message> messages = ReadTextMessages();
+                MakeChart(messages);
             }
             else {
                 RequestPermissions();
             }
             }
         });
-
-        FloatingActionButton delete_fab = (FloatingActionButton) findViewById(R.id.delete);
-        delete_fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (HasPermissions()) {
-                    DeleteFolder();
-                }
-                else {
-                    RequestPermissions();
-                }
-            }
-        });
     }
 
     private void MakeToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void MakeChart(ArrayList<Message> messages) {
+        Map<String, Integer> uniqueCount = new HashMap<>();
+
+        for (Message message: messages) {
+            Integer count = uniqueCount.get(message.contact.name);
+            uniqueCount.put(message.contact.name, (count==null) ? 1 : count+1);
+        }
+
+        PieChart chart = (PieChart)findViewById(R.id.pieChart);
+        List<PieEntry> entries = new ArrayList<>();
+        for (String key:uniqueCount.keySet()) {
+            entries.add(new PieEntry(uniqueCount.get(key), key));
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries, "Received SMS Results");
+        PieData data = new PieData(dataSet);
+        chart.setData(data);
+        chart.invalidate();
     }
 
     private void DeleteFolder() {
@@ -178,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (allowed) {
-            MakeFolder();
+            MakeToast("Permissions Granted: Please Try Again");
         }
         else {
             if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {

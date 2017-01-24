@@ -6,8 +6,8 @@ package com.tcdesignmn.cgosiak.runtimepermissions;
  */
 
 public class Contact {
-    private String number;
-    private String name;
+    public String number;
+    public String name;
 
     public Contact(String number, String name) {
         this.name = name;
